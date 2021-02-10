@@ -2,14 +2,14 @@ from watchdog.observers import Observer
 import time
 from watchdog.events import FileSystemEventHandler
 import os
-import json
+from pathlib import Path
 
 # folder that should be tracked
 folder_to_track = "/Users/Basti/Downloads/"
 
 # documents
 document_destination = folder_to_track + "Dokumente"
-document_extensions = [".doc", ".docx", ".txt", ".pdf", ".xls", ".xlsx"]
+document_extensions = [".doc", ".docx", ".txt", ".pdf", ".xls", ".xlsx", ".ppt"]
 
 # images
 image_destination = folder_to_track + "Bilder"
@@ -44,20 +44,31 @@ class MyHandler(FileSystemEventHandler):
     def on_modified(self, event):
         for filename in os.listdir(folder_to_track):
             src = folder_to_track + "/" + filename
-
             if filename.lower().endswith(tuple(document_extensions)):
-                new_destination = document_destination + "/" + filename
+                filename = validate_filename(document_destination, filename)
+                new_destination = document_destination + "/" + filename             
                 os.rename(src, new_destination)
-            elif filename.lower().endswith(tuple(image_extensions)):               
+            elif filename.lower().endswith(tuple(image_extensions)):  
+                filename = validate_filename(image_destination, filename)             
                 new_destination = image_destination + "/" + filename
                 os.rename(src, new_destination)
-            elif filename.lower().endswith(tuple(install_extensions)):               
+            elif filename.lower().endswith(tuple(install_extensions)): 
+                filename = validate_filename(install_destination, filename)              
                 new_destination = install_destination + "/" + filename
                 os.rename(src, new_destination)
-            elif filename.lower().endswith(tuple(video_extensions)):               
+            elif filename.lower().endswith(tuple(video_extensions)):  
+                filename = validate_filename(video_destination, filename)             
                 new_destination = video_destination + "/" + filename
                 os.rename(src, new_destination)
-    
+
+def validate_filename(path_to_folder, filename):
+    path = path_to_folder + "/" + filename
+    if Path(path).is_file():
+        print(f"{path_to_folder} contains {filename}")
+        return "copy_" + filename 
+    else:
+        return filename
+
 def create_folders_if_dont_exist():
         if not os.path.exists(image_destination):
             os.makedirs(image_destination)
